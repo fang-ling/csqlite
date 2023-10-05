@@ -5,11 +5,11 @@ import PackageDescription
 let package = Package(
   name: "owj",
   products: [
-    .library(name: "CSQLite", targets: ["owj"]),
+    .library(name: "CSQLite", targets: ["CSQLite"]),
   ],
   targets: [
     .target(
-      name: "owj",
+      name: "CSQLite",
       dependencies: ["sqlite"]
     ),
     .target(
@@ -17,8 +17,8 @@ let package = Package(
       path: "src"
     ),
     .testTarget(
-      name: "owjTests",
-      dependencies: ["owj"]
+      name: "CSQLiteTests",
+      dependencies: ["CSQLite"]
     )
   ]
 )

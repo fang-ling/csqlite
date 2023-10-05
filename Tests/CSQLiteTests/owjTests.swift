@@ -1,5 +1,5 @@
 import XCTest
-@testable import owj
+@testable import CSQLite
 
 final class owjTests: XCTestCase {
   func test_exec() throws {
