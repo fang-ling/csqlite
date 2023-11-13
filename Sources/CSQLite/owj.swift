@@ -1,6 +1,6 @@
 //
 //  owj.swift
-//
+//  owj
 //
 //  Created by Fang Ling on 2022/11/19.
 //
@@ -8,17 +8,17 @@
 import Foundation
 import sqlite
 
-typealias SQLite3Pointer = OpaquePointer
-typealias SQLite3StmtPointer = OpaquePointer
-public typealias SQLite3Row = [String : String]
+//typealias SQLite3Pointer = OpaquePointer
+//typealias SQLite3StmtPointer = OpaquePointer
+//public typealias SQLite3Row = [String : String]
 
 /* Swift wrapper of C library sqlite */
-@discardableResult
-public func exec(at path : String, sql : String) -> [SQLite3Row] {
-  var result = [SQLite3Row]()
-  /* Open db file */
-  var db : SQLite3Pointer? = nil
-  /* 
+public class SQLite {
+  var db : OpaquePointer? = nil
+  
+  // MARK: - init & deinit
+  /*
+   * API REFERENCES:
    * The sqlite3_open_v2() interface works like sqlite3_open() except that it
    * accepts two additional parameters for additional control over the new
    * database connection.
@@ -33,10 +33,49 @@ public func exec(at path : String, sql : String) -> [SQLite3Row] {
    * The default encoding will be UTF-8 for databases created using
    * sqlite3_open() or sqlite3_open_v2().
    */
-  let db_flag = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
-  if sqlite3_open_v2(path, &db, db_flag, nil) != SQLITE_OK {
-    fatalError(String(cString: sqlite3_errmsg(db!)))
+  public init(_ location : String) throws {
+    let flags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
+    try check_error(sqlite3_open_v2(location, &db, flags, nil))
   }
+  
+  /*
+   * API REFERENCES:
+   * The sqlite3_close() and sqlite3_close_v2() routines are destructors for the
+   * sqlite3 object. Calls to sqlite3_close() and sqlite3_close_v2() return
+   * SQLITE_OK if the sqlite3 object is successfully destroyed and all
+   * associated resources are deallocated.
+   *
+   * Calling sqlite3_close() or sqlite3_close_v2() with a NULL pointer argument
+   * is a harmless no-op.
+   */
+  deinit {
+    try! check_error(sqlite3_close(db))
+  }
+  
+  // MARK: - Error handling
+  /*
+   * API REFERENCES:
+   * The sqlite3_errstr() interface returns the English-language text that
+   * describes the result code, as UTF-8. Memory to hold the error message
+   * string is managed internally and must not be freed by the application.
+   */
+  func check_error(_ error_code : CInt) throws {
+    if !SQLiteError.non_error_codes.contains(error_code) {
+      throw SQLiteError.error(String(cString: sqlite3_errstr(error_code)))
+    }
+  }
+}
+
+@discardableResult
+public func exec(at path : String, sql : String) -> [SQLite3Row] {
+  var result = [SQLite3Row]()
+  /* Open db file */
+  var db : SQLite3Pointer? = nil
+  
+  
+//  if sqlite3_open_v2(path, &db, db_flag, nil) != SQLITE_OK {
+//    fatalError(String(cString: sqlite3_errmsg(db!)))
+//  }
   /* Prepare (Support multiple queries) */
   var pz_tail : UnsafePointer<CChar>?
   sql.withCString { ptr in
@@ -80,8 +119,8 @@ public func exec(at path : String, sql : String) -> [SQLite3Row] {
      */
     sqlite3_finalize(stmt)
   }
-  /* Deinit */
-  sqlite3_close(db)
+//  /* Deinit */
+//  sqlite3_close(db)
   
   return result
 }
