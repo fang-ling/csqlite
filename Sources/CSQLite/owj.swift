@@ -29,6 +29,9 @@ public func exec(at path : String, sql : String) -> [SQLite3Row] {
    * sqlite3_open_v2(N,P,F,V).
    *
    * 'sqlite3_config' is unavailable: Variadic function is unavailable
+   *
+   * The default encoding will be UTF-8 for databases created using
+   * sqlite3_open() or sqlite3_open_v2().
    */
   let db_flag = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
   if sqlite3_open_v2(path, &db, db_flag, nil) != SQLITE_OK {
