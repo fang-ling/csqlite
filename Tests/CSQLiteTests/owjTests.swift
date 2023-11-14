@@ -32,5 +32,22 @@ final class owjTests: XCTestCase {
     } catch SQLiteError.error(let msg) {
       XCTAssertEqual(msg, "SQL logic error")
     }
+    
+    let name = "M'N's''".sqlite_string_literal()
+    try db.run(
+      """
+      INSERT INTO "users" ("name", "email") VALUES ('\(name)', 'test@test.com');
+      """
+    )
+    table.append(["id" : "3", "name" : "M'N's''", "email" : "test@test.com"])
+    result = try db.run(#"SELECT * FROM "users";"#)
+    XCTAssertEqual(result, table)
+  }
+  
+  func test_misc() {
+    XCTAssertEqual(
+      "It's Bob's item.".sqlite_string_literal(),
+      "It''s Bob''s item."
+    )
   }
 }
