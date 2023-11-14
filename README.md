@@ -34,6 +34,12 @@ A minimal Swift wrapper around SQLite.
   }
 ```
 
+`CSQLite` also comes with a convenience function that helps you escape a string literal to a valid SQLite string literal. Specifically, it is used to handle single quotes within the string.
+
+```swift
+"Placeholder".sqlite_string_literal()
+```
+
 ## Using CSQLite in your project
 
 To use CSQLite in a SwiftPM project:
@@ -41,7 +47,7 @@ To use CSQLite in a SwiftPM project:
 1. Add the following line to the dependencies in your Package.swift file:
 
 ```swift
-.package(url: "https://github.com/fang-ling/csqlite", from: "0.0.3")
+.package(url: "https://github.com/fang-ling/csqlite", from: "0.0.4")
 ```
 
 2. Add `CSQLite` as a dependency for your target:
