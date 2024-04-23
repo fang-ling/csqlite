@@ -5,20 +5,17 @@ import PackageDescription
 let package = Package(
   name: "owj",
   products: [
-    .library(name: "CSQLite", targets: ["CSQLite"]),
+    .library(name: "SystemSQLite", targets: ["SystemSQLite"]),
   ],
   targets: [
     .target(
-      name: "CSQLite",
+      name: "SystemSQLite",
       dependencies: ["sqlite"]
     ),
-    .target(
-      name: "sqlite",
-      path: "src"
-    ),
+    .systemLibrary(name: "sqlite"),
     .testTarget(
-      name: "CSQLiteTests",
-      dependencies: ["CSQLite"]
+      name: "SystemSQLiteTests",
+      dependencies: ["SystemSQLite"]
     )
   ]
 )
