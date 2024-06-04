@@ -8,7 +8,7 @@
 import Foundation
 import sqlite
 
-public enum SQLiteError : Error {
+public enum SQLiteError: Error {
   /*
    * API REFERENCES:
    * There are only a few non-error result codes: SQLITE_OK, SQLITE_ROW,

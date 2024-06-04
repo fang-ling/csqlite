@@ -9,5 +9,6 @@
 #define sqlite_h
 
 #import <sqlite3.h>
+#import <sqlite3ext.h>
 
 #endif /* sqlite_h */

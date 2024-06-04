@@ -10,11 +10,11 @@ import sqlite
 
 //typealias SQLite3Pointer = OpaquePointer
 //typealias SQLite3StmtPointer = OpaquePointer
-//public typealias SQLite3Row = [String : String]
+//public typealias SQLite3Row = [String: String]
 
 /* Swift wrapper of C library sqlite */
 public class SQLite {
-  var db : OpaquePointer? = nil
+  var db: OpaquePointer? = nil
   
   // MARK: - init & deinit
   /*
@@ -33,7 +33,7 @@ public class SQLite {
    * The default encoding will be UTF-8 for databases created using
    * sqlite3_open() or sqlite3_open_v2().
    */
-  public init(_ location : String) throws {
+  public init(_ location: String) throws {
     let flags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
     try check_error(sqlite3_open_v2(location, &db, flags, nil))
   }
@@ -60,36 +60,45 @@ public class SQLite {
    */
   /// Compiling and Run An SQL Statement
   @discardableResult
-  public func run(_ sql : String) throws -> [[String : String]] {
-    var result = [[String : String]]()
+  public func exec<T: Codable>(_ sql: String, as: T.Type) throws -> [T] {
+    var result = [T]()
     /* Prepare (Support multiple queries) */
-    var pz_tail : UnsafePointer<CChar>?
+    var pz_tail: UnsafePointer<CChar>?
     sql.withCString { ptr in
       pz_tail = ptr
     }
     while pz_tail?.pointee != 0 {
-      var stmt : OpaquePointer? = nil
+      var stmt: OpaquePointer? = nil
       try check_error(sqlite3_prepare_v2(db, pz_tail, -1, &stmt, &pz_tail))
       /* Query using sqlite3_step */
       var code = SQLITE_OK
       repeat {
         code = sqlite3_step(stmt)
         try check_error(code)
-        var row = [String : String]()
+        var row = [String: Any]()
         for i in 0 ..< sqlite3_column_count(stmt) {
-          let col = String(cString: sqlite3_column_name(stmt, i))
+          let col_name = String(cString: sqlite3_column_name(stmt, i))
           switch sqlite3_column_type(stmt, i) {
-            /* Currently only two type used */
           case SQLITE3_TEXT:
-            row[col] = String(cString: sqlite3_column_text(stmt, i))
+            row[col_name] = String(cString: sqlite3_column_text(stmt, i))
             break
           case SQLITE_INTEGER:
-            row[col] = String(sqlite3_column_int(stmt, i))
+            row[col_name] = sqlite3_column_int(stmt, i)
+            break
+          case SQLITE_FLOAT:
+            row[col_name] = sqlite3_column_double(stmt, i)
+            break
+          case SQLITE_NULL:
+            row[col_name] = nil
+            break
+          case SQLITE_BLOB:
+            print("Error: BLOB type is not supported")
+            break
           default: break
           }
         }
         if !row.isEmpty {
-          result.append(row)
+          try result.append(row.decode())
         }
       } while (code != SQLITE_DONE)
       sqlite3_finalize(stmt)
@@ -104,7 +113,7 @@ public class SQLite {
    * describes the result code, as UTF-8. Memory to hold the error message
    * string is managed internally and must not be freed by the application.
    */
-  private func check_error(_ error_code : CInt) throws {
+  private func check_error(_ error_code: CInt) throws {
     if !SQLiteError.non_error_codes.contains(error_code) {
       throw SQLiteError.error(String(cString: sqlite3_errstr(error_code)))
     }
