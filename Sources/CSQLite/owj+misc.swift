@@ -18,3 +18,10 @@ extension String {
     self.replacingOccurrences(of: "'", with: "''")
   }
 }
+
+extension Dictionary where Key == String, Value: Any {
+  func decode<T: Codable>() throws -> T {
+    let json = try JSONSerialization.data(withJSONObject: self)
+    return try JSONDecoder().decode(T.self, from: json)
+  }
+}

@@ -53,6 +53,11 @@ public class SQLite {
   }
   
   // MARK: - run
+  
+  public func exec(_ sql: String) throws {
+    try check_error(sqlite3_exec(db, sql, nil, nil, nil))
+  }
+  
   /*
    * API REFERENCES:
    * SQLITE_DONE means that the statement has finished executing successfully.

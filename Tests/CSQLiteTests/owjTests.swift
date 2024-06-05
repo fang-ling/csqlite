@@ -33,28 +33,27 @@ final class owjTests: XCTestCase {
       User(id: 1, name: "Alice", email: "alice@test.com"),
       User(id: 2, name: "Tracy", email: "tracy@test.com")
     ]
-    print(result)
     XCTAssertEqual(result.sorted(), table.sorted())
     
-    try db.exec(#"DELETE FROM "users" WHERE ("id" = 1);"#, as: User.self)
-    result = try db.run(#"SELECT * FROM "users";"#)
+    try db.exec(#"DELETE FROM "users" WHERE ("id" = 1);"#)
+    result = try db.exec(#"SELECT * FROM "users";"#, as: User.self)
     table.removeFirst()
     XCTAssertEqual(result, table)
     
     do {
-      try db.run(#"SELECT * FOM "Users";"#) /* Buggy sql stmt */
+      try db.exec(#"SELECT * FOM "Users";"#) /* Buggy sql stmt */
     } catch SQLiteError.error(let msg) {
       XCTAssertEqual(msg, "SQL logic error")
     }
     
     let name = "M'N's''".sqlite_string_literal()
-    try db.run(
+    try db.exec(
       """
       INSERT INTO "users" ("name", "email") VALUES ('\(name)', 'test@test.com');
       """
     )
-    table.append(["id": "3", "name": "M'N's''", "email": "test@test.com"])
-    result = try db.run(#"SELECT * FROM "users";"#)
+    table.append(User(id: 3, name: "M'N's''", email: "test@test.com"))
+    result = try db.exec(#"SELECT * FROM "users";"#, as: User.self)
     XCTAssertEqual(result, table)
   }
   
