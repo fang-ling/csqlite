@@ -55,6 +55,17 @@ final class owjTests: XCTestCase {
     table.append(User(id: 3, name: "M'N's''", email: "test@test.com"))
     result = try db.exec(#"SELECT * FROM "users";"#, as: User.self)
     XCTAssertEqual(result, table)
+    
+    
+    /* test foreign keys */
+    struct ForeignKey: Equatable, Codable {
+      var foreign_keys: Int
+    }
+    
+    XCTAssertEqual(
+      try db.exec("PRAGMA foreign_keys;", as: ForeignKey.self),
+      [ForeignKey(foreign_keys: 1)]
+    )
   }
   
   func test_misc() {

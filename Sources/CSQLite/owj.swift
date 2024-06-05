@@ -14,6 +14,8 @@ import sqlite
 
 /* Swift wrapper of C library sqlite */
 public class SQLite {
+  private static let SQLITE_SQL_HEADER = "PRAGMA foreign_keys = ON;"
+  
   var db: OpaquePointer? = nil
   
   // MARK: - init & deinit
@@ -54,8 +56,23 @@ public class SQLite {
   
   // MARK: - run
   
+  public func begin_transaction() throws {
+    try exec("BEGIN TRANSACTION;")
+  }
+  
+  public func commit() throws {
+    try exec("COMMIT;")
+  }
+  
+  public func rollback() throws {
+    try exec("ROLLBACK;")
+  }
+  
   public func exec(_ sql: String) throws {
-    try check_error(sqlite3_exec(db, sql, nil, nil, nil))
+    let sql = SQLite.SQLITE_SQL_HEADER + sql
+    try check_error(
+      sqlite3_exec(db, sql, nil, nil, nil)
+    )
   }
   
   /*
@@ -66,6 +83,7 @@ public class SQLite {
   /// Compiling and Run An SQL Statement
   @discardableResult
   public func exec<T: Codable>(_ sql: String, as: T.Type) throws -> [T] {
+    let sql = SQLite.SQLITE_SQL_HEADER + sql
     var result = [T]()
     /* Prepare (Support multiple queries) */
     var pz_tail: UnsafePointer<CChar>?
